@@ -138,6 +138,16 @@
         <item>17</item>
     </string-array>
 
+    <string-array name="ai_api_format_entries" translatable="false">
+        <item>Gemini</item>
+        <item>OpenAI</item>
+    </string-array>
+
+    <string-array name="ai_api_format_entry_values" translatable="false">
+        <item>gemini</item>
+        <item>openai</item>
+    </string-array>
+
     <string-array name="read_cache_size_entries" translatable="false">
         <item>320 MB</item>
         <item>640 MB</item>

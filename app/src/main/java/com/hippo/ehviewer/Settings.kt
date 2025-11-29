@@ -80,6 +80,12 @@ object Settings : DataStorePreferences(null) {
     var language by stringPref("app_language", "system").observed { updateWhenLocaleChanges() }
     var lastDawnDay by longPref("last_dawn_day", 0)
     var lastUpdateDay by longPref("last_update_day", 0)
+    var aiGeminiBaseUrl by stringOrNullPref("ai_gemini_base_url", null)
+    var aiGeminiApiKey by stringOrNullPref("ai_gemini_api_key", null)
+    var aiOpenAiBaseUrl by stringOrNullPref("ai_openai_base_url", null)
+    var aiOpenAiApiKey by stringOrNullPref("ai_openai_api_key", null)
+    var aiApiFormat by stringPref("ai_api_format", "gemini")
+    var aiDefaultModel by stringOrNullPref("ai_default_model", null)
 
     init {
         if ("CN" == Locale.getDefault().country) {
