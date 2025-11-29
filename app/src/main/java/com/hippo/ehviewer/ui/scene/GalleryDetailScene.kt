@@ -57,12 +57,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.AutoFixHigh
 import androidx.compose.material.icons.filled.FolderZip
 import androidx.compose.material.icons.filled.ImageSearch
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.SwapVerticalCircle
+import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -172,6 +175,7 @@ import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import moe.tarsin.coroutines.runSuspendCatching
@@ -807,11 +811,25 @@ class GalleryDetailScene : BaseScene() {
     private fun onDownloadButtonClick() {
         val galleryDetail = composeBindingGD ?: return
         if (EhDownloadManager.getDownloadState(galleryDetail.gid) == DownloadInfo.STATE_INVALID) {
-            CommonOperations.startDownload(
-                activity as MainActivity,
-                galleryDetail.galleryInfo,
-                false,
-            )
+            viewLifecycleOwner.lifecycleScope.launch {
+                kotlin.runCatching {
+                    val selection = dialogState.showSelectItemWithIcon(
+                        Icons.Default.Download to R.string.download_option_standard,
+                        Icons.Default.AutoFixHigh to R.string.download_option_colorize,
+                        Icons.Default.Translate to R.string.download_option_translate,
+                        Icons.Default.AutoAwesome to R.string.download_option_colorize_translate,
+                        title = getString(R.string.download_option_title),
+                    )
+                    when (DownloadSelection.from(selection)) {
+                        DownloadSelection.STANDARD -> startStandardDownload(galleryDetail)
+                        DownloadSelection.COLORIZE -> startColorizeDownload(galleryDetail)
+                        DownloadSelection.TRANSLATE -> startTranslateDownload(galleryDetail)
+                        DownloadSelection.COLORIZE_TRANSLATE -> startColorizeAndTranslateDownload(galleryDetail)
+                    }
+                }.onFailure {
+                    if (it !is CancellationException) throw it
+                }
+            }
         } else {
             val builder = CheckBoxDialogBuilder(
                 requireContext(),
@@ -829,6 +847,35 @@ class GalleryDetailScene : BaseScene() {
             builder.setTitle(R.string.download_remove_dialog_title)
                 .setPositiveButton(android.R.string.ok, helper)
                 .show()
+        }
+    }
+
+    private fun startStandardDownload(galleryDetail: GalleryDetail) {
+        CommonOperations.startDownload(
+            activity as MainActivity,
+            galleryDetail.galleryInfo,
+            false,
+        )
+    }
+
+    private fun startColorizeDownload(galleryDetail: GalleryDetail) {
+        startAiDownload(galleryDetail, AiDownloadMode.COLORIZE)
+    }
+
+    private fun startTranslateDownload(galleryDetail: GalleryDetail) {
+        startAiDownload(galleryDetail, AiDownloadMode.TRANSLATE)
+    }
+
+    private fun startColorizeAndTranslateDownload(galleryDetail: GalleryDetail) {
+        startAiDownload(galleryDetail, AiDownloadMode.COLORIZE_AND_TRANSLATE)
+    }
+
+    private fun startAiDownload(galleryDetail: GalleryDetail, mode: AiDownloadMode) {
+        val mainActivity = activity as? MainActivity ?: return
+        when (mode) {
+            AiDownloadMode.COLORIZE -> mainActivity.startColorizeDownload(galleryDetail.galleryInfo)
+            AiDownloadMode.TRANSLATE -> mainActivity.startTranslateDownload(galleryDetail.galleryInfo)
+            AiDownloadMode.COLORIZE_AND_TRANSLATE -> mainActivity.startColorizeAndTranslateDownload(galleryDetail.galleryInfo)
         }
     }
 
@@ -1270,6 +1317,36 @@ class GalleryDetailScene : BaseScene() {
                 EhDownloadManager.deleteDownload(mGalleryInfo.gid, checked)
             }
         }
+    }
+
+    private enum class DownloadSelection {
+        STANDARD,
+        COLORIZE,
+        TRANSLATE,
+        COLORIZE_TRANSLATE,
+        ;
+
+        companion object {
+            fun from(index: Int) = entries.getOrNull(index) ?: STANDARD
+        }
+    }
+
+    private enum class AiDownloadMode {
+        COLORIZE,
+        TRANSLATE,
+        COLORIZE_AND_TRANSLATE,
+    }
+
+    private fun MainActivity.startColorizeDownload(galleryInfo: BaseGalleryInfo) {
+        CommonOperations.startDownload(this, galleryInfo, false)
+    }
+
+    private fun MainActivity.startTranslateDownload(galleryInfo: BaseGalleryInfo) {
+        CommonOperations.startDownload(this, galleryInfo, false)
+    }
+
+    private fun MainActivity.startColorizeAndTranslateDownload(galleryInfo: BaseGalleryInfo) {
+        CommonOperations.startDownload(this, galleryInfo, false)
     }
 
     private inner class ArchiveListDialogHelper :
