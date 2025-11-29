@@ -301,6 +301,7 @@ class DownloadService : Service(), DownloadManager.DownloadListener, CoroutineSc
         if (mNotifyManager == null) {
             return
         }
+        launch { AiProcessor.enqueue(info) }
         if (null != mDownloadingDelay) {
             mDownloadingDelay!!.cancel()
         }

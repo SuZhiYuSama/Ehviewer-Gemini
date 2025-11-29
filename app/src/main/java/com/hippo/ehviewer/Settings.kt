@@ -4,6 +4,7 @@ package com.hippo.ehviewer
 
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
+import com.hippo.ehviewer.download.AiProcessingMode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asFlow
@@ -31,6 +32,9 @@ object Settings : DataStorePreferences(null) {
     var downloadFragment by stringOrNullPref("image_fragment", null)
     var archivePasswds by stringSetOrNullPref("archive_passwds")
     var downloadDelay by intFromStrPref("download_delay", 0)
+    var aiProcessingEnabled by boolPref("ai_processing_enabled", false)
+    var aiProcessingMode by enumPref("ai_processing_mode", AiProcessingMode.COMBINED)
+    var aiProcessingEndpoint by stringOrNullPref("ai_processing_endpoint", null)
     var gallerySite by intFromStrPref("gallery_site", 0).observed { updateWhenGallerySiteChanges() }
     var multiThreadDownload by intFromStrPref("download_thread", 3)
     var preloadImage by intFromStrPref("preload_image", 5)
@@ -110,6 +114,13 @@ object Settings : DataStorePreferences(null) {
             check(value.size == count)
             edit { value.zip(_value) { v, d -> d.value = v } }
         }
+    }
+
+    private inline fun <reified T : Enum<T>> enumPref(key: String, defValue: T) = object : Delegate<T> {
+        override val flowGetter: () -> Flow<Unit>
+        private var _value by stringPref(key, defValue.name).also { flowGetter = { it.changesFlow() } }
+        override fun getValue(thisRef: Any?, prop: KProperty<*>?) = runCatching { enumValueOf<T>(_value) }.getOrDefault(defValue)
+        override fun setValue(thisRef: Any?, prop: KProperty<*>?, value: T) { _value = value.name }
     }
 
     private fun stringArrayPref(key: String, count: Int, defMetaValue: String) = object : Delegate<Array<String>> {
