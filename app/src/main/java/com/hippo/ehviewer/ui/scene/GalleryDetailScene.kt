@@ -168,6 +168,8 @@ import com.hippo.ehviewer.util.IntList
 import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.getParcelableCompat
+import com.hippo.ehviewer.download.AiDownloadCoordinator
+import com.hippo.ehviewer.download.AiMode
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlinx.coroutines.CancellationException
@@ -178,6 +180,7 @@ import moe.tarsin.coroutines.runSuspendCatching
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import splitties.systemservices.downloadManager
 import kotlin.math.roundToInt
+import java.util.Locale
 import com.hippo.ehviewer.download.DownloadManager as EhDownloadManager
 
 class GalleryDetailScene : BaseScene() {
@@ -807,11 +810,7 @@ class GalleryDetailScene : BaseScene() {
     private fun onDownloadButtonClick() {
         val galleryDetail = composeBindingGD ?: return
         if (EhDownloadManager.getDownloadState(galleryDetail.gid) == DownloadInfo.STATE_INVALID) {
-            CommonOperations.startDownload(
-                activity as MainActivity,
-                galleryDetail.galleryInfo,
-                false,
-            )
+            showDownloadChoiceDialog(galleryDetail.galleryInfo)
         } else {
             val builder = CheckBoxDialogBuilder(
                 requireContext(),
@@ -830,6 +829,42 @@ class GalleryDetailScene : BaseScene() {
                 .setPositiveButton(android.R.string.ok, helper)
                 .show()
         }
+    }
+
+    private fun showDownloadChoiceDialog(galleryInfo: GalleryInfo) {
+        val context = context ?: return
+        val options = arrayOf(
+            getString(R.string.download_plain),
+            getString(R.string.download_ai_color),
+            getString(R.string.download_ai_translate),
+            getString(R.string.download_ai_full),
+        )
+        BaseDialogBuilder(context)
+            .setItems(options) { dialog, which ->
+                when (which) {
+                    0 -> CommonOperations.startDownload(activity as MainActivity, galleryInfo, false)
+                    1 -> startAiDownload(galleryInfo, AiMode.COLOR)
+                    2 -> startAiDownload(galleryInfo, AiMode.TRANSLATE)
+                    3 -> startAiDownload(galleryInfo, AiMode.FULL)
+                }
+                dialog?.dismiss()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun startAiDownload(galleryInfo: GalleryInfo, mode: AiMode) {
+        val apiFormat = Settings.aiApiFormat
+        val formatNormalized = apiFormat.lowercase(Locale.getDefault())
+        val model = if (formatNormalized == "openai") Settings.aiOpenAiModel else Settings.aiGeminiModel
+        AiDownloadCoordinator.enqueue(
+            galleryInfo,
+            mode,
+            formatNormalized,
+            model,
+            Settings.aiTargetLanguage,
+        )
+        CommonOperations.startDownload(activity as MainActivity, galleryInfo, false)
     }
 
     private fun onReadButtonClick() = composeBindingGI?.let { context?.navToReader(it) }

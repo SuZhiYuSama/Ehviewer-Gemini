@@ -119,6 +119,28 @@
         <item>10000</item>
         <item>20000</item>
     </string-array>
+    <string-array name="ai_api_format_entries" translatable="false">
+        <item>Gemini</item>
+        <item>OpenAI</item>
+    </string-array>
+    <string-array name="ai_api_format_values" translatable="false">
+        <item>gemini</item>
+        <item>openai</item>
+    </string-array>
+    <string-array name="ai_target_language_entries" translatable="false">
+        <item>简体中文</item>
+        <item>繁體中文</item>
+        <item>English</item>
+        <item>日本語</item>
+        <item>한국어</item>
+    </string-array>
+    <string-array name="ai_target_language_values" translatable="false">
+        <item>zh-CN</item>
+        <item>zh-TW</item>
+        <item>en</item>
+        <item>ja</item>
+        <item>ko</item>
+    </string-array>
 
     <string-array name="preload_image_entries" translatable="false">
         <item>3</item>
