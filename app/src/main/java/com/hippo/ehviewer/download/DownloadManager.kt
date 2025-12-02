@@ -125,6 +125,30 @@ object DownloadManager : OnSpiderListener {
         return info?.state ?: DownloadInfo.STATE_INVALID
     }
 
+    suspend fun addFinishedDownload(galleryInfo: BaseGalleryInfo, dirname: String): DownloadInfo? {
+        val info = DownloadInfo(galleryInfo, dirname).apply {
+            state = DownloadInfo.STATE_FINISH
+            position = allInfoList.size
+            legacy = 0
+            finished = galleryInfo.pages
+            downloaded = galleryInfo.pages
+            total = galleryInfo.pages
+        }
+        val list = getInfoListForLabel(info.label) ?: return null
+        list.addFirst(info)
+        allInfoList.addFirst(info)
+        mAllInfoMap[galleryInfo.gid] = info
+
+        EhDB.putDownloadDirname(info.gid, dirname)
+        EhDB.putDownloadInfo(info)
+        EhDB.putHistoryInfo(info.galleryInfo)
+
+        for (l in mDownloadInfoListeners) {
+            l.onAdd(info, list, list.size - 1)
+        }
+        return info
+    }
+
     fun addDownloadInfoListener(downloadInfoListener: DownloadInfoListener) {
         mDownloadInfoListeners.add(downloadInfoListener)
     }
@@ -458,6 +482,7 @@ object DownloadManager : OnSpiderListener {
         if (info != null) {
             // Remove from DB
             EhDB.removeDownloadInfo(info)
+            AiDownloadCoordinator.cancel(gid)
 
             // Remove all list and map
             allInfoList.remove(info)
@@ -493,6 +518,7 @@ object DownloadManager : OnSpiderListener {
         }
         EhDB.removeDownloadInfo(list)
         allInfoList.removeAll(list.toSet())
+        gidList.forEach { AiDownloadCoordinator.cancel(it) }
 
         // Update listener
         for (l in mDownloadInfoListeners) {
@@ -1042,6 +1068,7 @@ object DownloadManager : OnSpiderListener {
                                     l.onUpdate(info, list)
                                 }
                             }
+                            AiDownloadCoordinator.onDownloadFinished(info)
                             // Start next download
                             ensureDownload()
                         }

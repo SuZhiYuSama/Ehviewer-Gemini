@@ -78,6 +78,17 @@ object Settings : DataStorePreferences(null) {
     var displayName by stringOrNullPref("display_name", null)
     var avatar by stringOrNullPref("avatar", null)
     var language by stringPref("app_language", "system").observed { updateWhenLocaleChanges() }
+
+    // AI 配置
+    var aiApiFormat by stringPref("ai_api_format", "gemini")
+    var aiGeminiBaseUrl by stringPref("ai_gemini_base_url", "https://generativelanguage.googleapis.com")
+    var aiOpenAiBaseUrl by stringPref("ai_openai_base_url", "https://api.openai.com")
+    var aiGeminiApiKey by stringPref("ai_gemini_api_key", "")
+    var aiOpenAiApiKey by stringPref("ai_openai_api_key", "")
+    var aiGeminiModel by stringPref("ai_gemini_model", "gemini-2.0-flash-exp")
+    var aiOpenAiModel by stringPref("ai_openai_model", "gpt-image-1")
+    var aiTargetLanguage by stringPref("ai_target_language", "zh-CN")
+    var aiPendingJobs by stringSetOrNullPref("ai_pending_jobs")
     var lastDawnDay by longPref("last_dawn_day", 0)
     var lastUpdateDay by longPref("last_update_day", 0)
 

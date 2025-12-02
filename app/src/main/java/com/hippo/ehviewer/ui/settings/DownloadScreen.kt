@@ -12,16 +12,20 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -153,6 +157,54 @@ fun DownloadScreen() {
                 summary = stringResource(id = R.string.settings_download_download_origin_image_summary),
                 value = Settings::downloadOriginImage,
             )
+
+            Preference(title = stringResource(id = R.string.settings_ai_title)) {}
+            SimpleMenuPreference(
+                title = stringResource(id = R.string.settings_ai_format),
+                entry = R.array.ai_api_format_entries,
+                entryValueRes = R.array.ai_api_format_values,
+                value = Settings::aiApiFormat,
+            )
+            EditablePreference(
+                title = stringResource(id = R.string.settings_ai_gemini_base_url),
+                summary = Settings.aiGeminiBaseUrl,
+                onSave = { Settings.aiGeminiBaseUrl = it },
+            )
+            EditablePreference(
+                title = stringResource(id = R.string.settings_ai_openai_base_url),
+                summary = Settings.aiOpenAiBaseUrl,
+                onSave = { Settings.aiOpenAiBaseUrl = it },
+            )
+            EditablePreference(
+                title = stringResource(id = R.string.settings_ai_gemini_key),
+                summary = Settings.aiGeminiApiKey.takeUnless { it.isBlank() } ?: stringResource(id = R.string.settings_ai_not_set),
+                initialValue = Settings.aiGeminiApiKey,
+                onSave = { Settings.aiGeminiApiKey = it },
+                placeholder = stringResource(id = R.string.settings_ai_key_placeholder),
+            )
+            EditablePreference(
+                title = stringResource(id = R.string.settings_ai_openai_key),
+                summary = Settings.aiOpenAiApiKey.takeUnless { it.isBlank() } ?: stringResource(id = R.string.settings_ai_not_set),
+                initialValue = Settings.aiOpenAiApiKey,
+                onSave = { Settings.aiOpenAiApiKey = it },
+                placeholder = stringResource(id = R.string.settings_ai_key_placeholder),
+            )
+            EditablePreference(
+                title = stringResource(id = R.string.settings_ai_gemini_model),
+                summary = Settings.aiGeminiModel,
+                onSave = { Settings.aiGeminiModel = it },
+            )
+            EditablePreference(
+                title = stringResource(id = R.string.settings_ai_openai_model),
+                summary = Settings.aiOpenAiModel,
+                onSave = { Settings.aiOpenAiModel = it },
+            )
+            SimpleMenuPreference(
+                title = stringResource(id = R.string.settings_ai_target_lang),
+                entry = R.array.ai_target_language_entries,
+                entryValueRes = R.array.ai_target_language_values,
+                value = Settings::aiTargetLanguage,
+            )
             val restoreFailed = stringResource(id = R.string.settings_download_restore_failed)
             WorkPreference(
                 title = stringResource(id = R.string.settings_download_restore_download_items),
@@ -234,6 +286,44 @@ fun DownloadScreen() {
             }
             Spacer(modifier = Modifier.size(paddingValues.calculateBottomPadding()))
         }
+    }
+}
+
+@Composable
+private fun EditablePreference(
+    title: String,
+    summary: String?,
+    placeholder: String = "",
+    initialValue: String = summary.orEmpty(),
+    onSave: (String) -> Unit,
+) {
+    var showDialog by remember { mutableStateOf(false) }
+    var value by remember { mutableStateOf(initialValue) }
+    var summaryText by remember { mutableStateOf(summary ?: initialValue) }
+    Preference(title = title, summary = summaryText) { showDialog = true }
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDialog = false
+                    onSave(value)
+                    summaryText = if (value.isBlank()) summary ?: "" else value
+                }) { Text(text = stringResource(id = android.R.string.ok)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog = false }) { Text(text = stringResource(id = android.R.string.cancel)) }
+            },
+            title = { Text(text = title) },
+            text = {
+                TextField(
+                    value = value,
+                    onValueChange = { value = it },
+                    placeholder = { if (placeholder.isNotBlank()) Text(text = placeholder) },
+                    singleLine = true,
+                )
+            },
+        )
     }
 }
 
