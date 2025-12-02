@@ -414,12 +414,9 @@
     <string name="settings_download_clean_redundancy_no_redundancy">No redundancy</string>
     <string name="settings_download_clean_redundancy_done">Redundancy cleaning completed, clean-up %d items totally</string>
     <string name="settings_ai">AI</string>
-    <string name="settings_ai_gemini_base_url">Gemini API base URL</string>
-    <string name="settings_ai_gemini_base_url_placeholder">https://generativelanguage.googleapis.com</string>
-    <string name="settings_ai_gemini_api_key">Gemini API key</string>
-    <string name="settings_ai_openai_base_url">OpenAI API base URL</string>
-    <string name="settings_ai_openai_base_url_placeholder">https://api.openai.com</string>
-    <string name="settings_ai_openai_api_key">OpenAI API key</string>
+    <string name="settings_ai_base_url">AI API base URL</string>
+    <string name="settings_ai_base_url_placeholder">https://generativelanguage.googleapis.com</string>
+    <string name="settings_ai_api_key">AI API key</string>
     <string name="settings_ai_format">API format</string>
     <string name="settings_ai_format_summary">Choose which provider format to use</string>
     <string name="settings_ai_default_model">Default model name</string>

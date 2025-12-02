@@ -62,19 +62,17 @@ fun AiSettingsScreen() {
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .verticalScroll(rememberScrollState()),
         ) {
-            var geminiBaseUrl by remember { mutableStateOf(Settings.aiGeminiBaseUrl.orEmpty()) }
-            var geminiApiKey by remember { mutableStateOf(Settings.aiGeminiApiKey.orEmpty()) }
-            var openAiBaseUrl by remember { mutableStateOf(Settings.aiOpenAiBaseUrl.orEmpty()) }
-            var openAiApiKey by remember { mutableStateOf(Settings.aiOpenAiApiKey.orEmpty()) }
+            var baseUrl by remember { mutableStateOf(Settings.aiBaseUrl.orEmpty()) }
+            var apiKey by remember { mutableStateOf(Settings.aiApiKey.orEmpty()) }
             var defaultModel by remember { mutableStateOf(Settings.aiDefaultModel.orEmpty()) }
 
             AiTextField(
-                label = stringResource(id = R.string.settings_ai_gemini_base_url),
-                placeholder = stringResource(id = R.string.settings_ai_gemini_base_url_placeholder),
-                value = geminiBaseUrl,
+                label = stringResource(id = R.string.settings_ai_base_url),
+                placeholder = stringResource(id = R.string.settings_ai_base_url_placeholder),
+                value = baseUrl,
                 onValueChange = {
-                    geminiBaseUrl = it
-                    Settings.aiGeminiBaseUrl = it.ifBlank { null }
+                    baseUrl = it
+                    Settings.aiBaseUrl = it.ifBlank { null }
                 },
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Uri),
             )
@@ -82,37 +80,11 @@ fun AiSettingsScreen() {
             Spacer(modifier = Modifier.height(12.dp))
 
             AiTextField(
-                label = stringResource(id = R.string.settings_ai_gemini_api_key),
-                value = geminiApiKey,
+                label = stringResource(id = R.string.settings_ai_api_key),
+                value = apiKey,
                 onValueChange = {
-                    geminiApiKey = it
-                    Settings.aiGeminiApiKey = it.ifBlank { null }
-                },
-                visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Password),
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            AiTextField(
-                label = stringResource(id = R.string.settings_ai_openai_base_url),
-                placeholder = stringResource(id = R.string.settings_ai_openai_base_url_placeholder),
-                value = openAiBaseUrl,
-                onValueChange = {
-                    openAiBaseUrl = it
-                    Settings.aiOpenAiBaseUrl = it.ifBlank { null }
-                },
-                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Uri),
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            AiTextField(
-                label = stringResource(id = R.string.settings_ai_openai_api_key),
-                value = openAiApiKey,
-                onValueChange = {
-                    openAiApiKey = it
-                    Settings.aiOpenAiApiKey = it.ifBlank { null }
+                    apiKey = it
+                    Settings.aiApiKey = it.ifBlank { null }
                 },
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Password),
