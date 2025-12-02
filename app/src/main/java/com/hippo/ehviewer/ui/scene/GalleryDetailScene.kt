@@ -32,6 +32,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import androidx.appcompat.app.AlertDialog
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
@@ -138,6 +139,7 @@ import com.hippo.ehviewer.databinding.ItemGalleryCommentBinding
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.spider.SpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.Companion.MODE_READ
+import com.hippo.ehviewer.download.AiProcessMode
 import com.hippo.ehviewer.ui.CommonOperations
 import com.hippo.ehviewer.ui.GalleryInfoBottomSheet
 import com.hippo.ehviewer.ui.MainActivity
@@ -807,11 +809,29 @@ class GalleryDetailScene : BaseScene() {
     private fun onDownloadButtonClick() {
         val galleryDetail = composeBindingGD ?: return
         if (EhDownloadManager.getDownloadState(galleryDetail.gid) == DownloadInfo.STATE_INVALID) {
-            CommonOperations.startDownload(
-                activity as MainActivity,
-                galleryDetail.galleryInfo,
-                false,
+            val options = arrayOf(
+                getString(R.string.download_option_plain),
+                getString(R.string.download_option_ai_color),
+                getString(R.string.download_option_ai_translate),
+                getString(R.string.download_option_ai_full),
             )
+            AlertDialog.Builder(requireContext())
+                .setTitle(R.string.download)
+                .setItems(options) { _, which ->
+                    val mode = when (which) {
+                        1 -> AiProcessMode.COLOR
+                        2 -> AiProcessMode.TRANSLATE
+                        3 -> AiProcessMode.FULL
+                        else -> AiProcessMode.NONE
+                    }
+                    CommonOperations.startDownload(
+                        activity as MainActivity,
+                        galleryDetail.galleryInfo,
+                        false,
+                        mode,
+                    )
+                }
+                .show()
         } else {
             val builder = CheckBoxDialogBuilder(
                 requireContext(),

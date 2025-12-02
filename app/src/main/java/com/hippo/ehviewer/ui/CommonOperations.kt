@@ -43,6 +43,8 @@ import com.hippo.ehviewer.client.data.GalleryInfo.Companion.LOCAL_FAVORITED
 import com.hippo.ehviewer.client.data.GalleryInfo.Companion.NOT_FAVORITED
 import com.hippo.ehviewer.client.exception.EhException
 import com.hippo.ehviewer.dao.DownloadInfo
+import com.hippo.ehviewer.download.AiDownloadCoordinator
+import com.hippo.ehviewer.download.AiProcessMode
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.DownloadService
 import com.hippo.ehviewer.download.downloadLocation
@@ -64,8 +66,8 @@ import rikka.core.util.ContextUtils.requireActivity
 import splitties.init.appCtx
 
 object CommonOperations {
-    fun startDownload(activity: MainActivity?, galleryInfo: BaseGalleryInfo, forceDefault: Boolean) {
-        startDownload(activity!!, listOf(galleryInfo), forceDefault)
+    fun startDownload(activity: MainActivity?, galleryInfo: BaseGalleryInfo, forceDefault: Boolean, aiMode: AiProcessMode = AiProcessMode.NONE) {
+        startDownload(activity!!, listOf(galleryInfo), forceDefault, aiMode)
     }
 
     @OptIn(DelicateCoroutinesApi::class)
@@ -73,12 +75,13 @@ object CommonOperations {
         activity: MainActivity,
         galleryInfos: List<BaseGalleryInfo>,
         forceDefault: Boolean,
+        aiMode: AiProcessMode = AiProcessMode.NONE,
     ) {
         launchNow {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 activity.requestPermission(Manifest.permission.POST_NOTIFICATIONS)
             }
-            doStartDownload(activity, galleryInfos, forceDefault)
+            doStartDownload(activity, galleryInfos, forceDefault, aiMode)
         }
     }
 
@@ -86,6 +89,7 @@ object CommonOperations {
         activity: MainActivity,
         galleryInfos: List<BaseGalleryInfo>,
         forceDefault: Boolean,
+        aiMode: AiProcessMode,
     ) {
         val toStart = LongList()
         val toAdd: MutableList<BaseGalleryInfo> = ArrayList()
@@ -121,6 +125,9 @@ object CommonOperations {
         if (justStart) {
             // Got default label
             for (gi in toAdd) {
+                if (aiMode != AiProcessMode.NONE) {
+                    AiDownloadCoordinator.enqueue(gi, aiMode)
+                }
                 val intent = Intent(activity, DownloadService::class.java)
                 intent.action = DownloadService.ACTION_START
                 intent.putExtra(DownloadService.KEY_LABEL, label)
@@ -150,6 +157,9 @@ object CommonOperations {
                     }
                     // Start download
                     for (gi in toAdd) {
+                        if (aiMode != AiProcessMode.NONE) {
+                            AiDownloadCoordinator.enqueue(gi, aiMode)
+                        }
                         val intent = Intent(activity, DownloadService::class.java)
                         intent.action = DownloadService.ACTION_START
                         intent.putExtra(DownloadService.KEY_LABEL, label1)

@@ -86,6 +86,7 @@ object Settings : DataStorePreferences(null) {
     var aiOpenAiApiKey by stringOrNullPref("ai_openai_api_key", null)
     var aiApiFormat by stringPref("ai_api_format", "gemini")
     var aiDefaultModel by stringOrNullPref("ai_default_model", null)
+    var aiPendingTasks by stringSetOrNullPref("ai_pending_tasks")
 
     init {
         if ("CN" == Locale.getDefault().country) {
