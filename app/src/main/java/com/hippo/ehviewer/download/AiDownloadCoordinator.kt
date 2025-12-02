@@ -20,7 +20,7 @@ object AiDownloadCoordinator {
 
     private fun restoreTasks() {
         Settings.aiPendingTasks?.forEach { entry ->
-            val parts = entry.split(":")
+            val parts = entry?.split(":") ?: return@forEach
             val gid = parts.getOrNull(0)?.toLongOrNull() ?: return@forEach
             val mode = parts.getOrNull(1)?.let { raw ->
                 runCatching { AiProcessMode.valueOf(raw) }.getOrNull()

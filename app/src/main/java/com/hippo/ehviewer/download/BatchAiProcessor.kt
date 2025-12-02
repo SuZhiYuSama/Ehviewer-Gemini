@@ -4,21 +4,22 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
+import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.dao.DownloadInfo
-import com.hippo.ehviewer.EhDB
-import com.hippo.ehviewer.download.DownloadManager
+import com.hippo.ehviewer.spider.getGalleryDownloadDir
 import com.hippo.ehviewer.util.AiManagers
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.GeminiManager
-import com.hippo.ehviewer.util.readBytesCompat
 import com.hippo.unifile.UniFile
+// 重点：加回这个 Import，它是独立的接口
+import com.hippo.unifile.FilenameFilter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
-import splitties.init.appCtx
-import com.hippo.ehviewer.spider.getGalleryDownloadDir
+import java.io.InputStream
+import java.io.OutputStream
 
 class BatchAiProcessor(private val context: Context) {
 
@@ -40,10 +41,18 @@ class BatchAiProcessor(private val context: Context) {
             return@withContext
         }
 
-        val imageFiles = sourceDir.listFiles { f ->
-            val name = f.name?.lowercase()
-            name != null && (name.endsWith(".jpg") || name.endsWith(".png") || name.endsWith(".jpeg"))
-        }?.sortedBy { it.name } ?: emptyList()
+        // --- 修复重点：使用 object : FilenameFilter (不带 UniFile. 前缀) ---
+        // 这样既解决了 Lambda 歧义，又解决了 Unresolved reference
+        val filter = object : FilenameFilter {
+            override fun accept(dir: UniFile?, name: String?): Boolean {
+                if (name == null) return false
+                val lowerName = name.lowercase()
+                return lowerName.endsWith(".jpg") || lowerName.endsWith(".png") || lowerName.endsWith(".jpeg")
+            }
+        }
+
+        val imageFiles = sourceDir.listFiles(filter)?.sortedBy { it.name } ?: emptyList()
+        // -----------------------------------------------------------
 
         if (imageFiles.isEmpty()) {
             withContext(Dispatchers.Main) { listener.onError("文件夹内无图片") }
@@ -54,6 +63,7 @@ class BatchAiProcessor(private val context: Context) {
             AiProcessMode.COLOR -> listOf(ProcessTarget.ColorOnly)
             AiProcessMode.TRANSLATE -> listOf(ProcessTarget.TranslateOnly)
             AiProcessMode.FULL -> listOf(ProcessTarget.ColorOnly, ProcessTarget.TranslateFromColor)
+            else -> emptyList()
         }
 
         val results = mutableListOf<DownloadInfo>()
@@ -72,13 +82,21 @@ class BatchAiProcessor(private val context: Context) {
                     listener.onProgress(index + 1, total, "正在处理第 ${index + 1} 页...")
                 }
 
+                val fileName = file.name ?: "page_${index + 1}.jpg"
+
                 val sourceBitmap = when (task) {
-                    ProcessTarget.TranslateFromColor -> previousDir?.findFile(file.name)?.let {
-                        val bytes = it.readBytesCompat()
-                        BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                    ProcessTarget.TranslateFromColor -> {
+                        previousDir?.findFile(fileName)?.let {
+                            val bytes = it.readBytesCompat()
+                            if (bytes.isNotEmpty()) {
+                                BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                            } else null
+                        }
                     }
-                    else -> file.openInputStream().use { BitmapFactory.decodeStream(it) }
-                } ?: continue
+                    else -> file.openInputStream()?.use { BitmapFactory.decodeStream(it) }
+                }
+
+                if (sourceBitmap == null) continue
 
                 val prompt = if (task == ProcessTarget.ColorOnly) GeminiManager.PROMPT_COLORIZE else GeminiManager.PROMPT_TRANSLATE
 
@@ -89,7 +107,7 @@ class BatchAiProcessor(private val context: Context) {
                     sourceBitmap
                 }
 
-                saveBitmap(targetDir, file.name ?: "page_${index + 1}.jpg", resultBitmap)
+                saveBitmap(targetDir, fileName, resultBitmap)
 
                 delay(1500)
             }
@@ -121,7 +139,7 @@ class BatchAiProcessor(private val context: Context) {
 
     private fun saveBitmap(targetDir: UniFile, name: String, bitmap: Bitmap) {
         val targetFile = targetDir.createFile(name) ?: return
-        targetFile.openOutputStream().use { os ->
+        targetFile.openOutputStream()?.use { os ->
             bitmap.compress(Bitmap.CompressFormat.JPEG, 90, os)
         }
     }
@@ -172,4 +190,22 @@ private enum class ProcessTarget {
     ColorOnly,
     TranslateOnly,
     TranslateFromColor,
+}
+
+// ================= Extension Functions =================
+
+fun UniFile.openInputStream(): InputStream? = try {
+    this.openFileDescriptor("r")?.let { java.io.FileInputStream(it.fileDescriptor) }
+} catch (e: Exception) {
+    null
+}
+
+fun UniFile.openOutputStream(): OutputStream? = try {
+    this.openFileDescriptor("w")?.let { java.io.FileOutputStream(it.fileDescriptor) }
+} catch (e: Exception) {
+    null
+}
+
+fun UniFile.readBytesCompat(): ByteArray {
+    return this.openInputStream()?.use { it.readBytes() } ?: ByteArray(0)
 }

@@ -122,7 +122,6 @@ fun AiSettingsScreen() {
 
             SimpleMenuPreference(
                 title = stringResource(id = R.string.settings_ai_format),
-                summary = stringResource(id = R.string.settings_ai_format_summary),
                 entry = R.array.ai_api_format_entries,
                 entryValueRes = R.array.ai_api_format_entry_values,
                 value = Settings::aiApiFormat,
