@@ -23,6 +23,7 @@ import com.hippo.ehviewer.ui.login.WebViewSignInScreen
 import com.hippo.ehviewer.ui.settings.AboutScreen
 import com.hippo.ehviewer.ui.settings.AdvancedScreen
 import com.hippo.ehviewer.ui.settings.BaseScreen
+import com.hippo.ehviewer.ui.settings.AiSettingsScreen
 import com.hippo.ehviewer.ui.settings.DownloadScreen
 import com.hippo.ehviewer.ui.settings.EhScreen
 import com.hippo.ehviewer.ui.settings.FilterScreen
@@ -81,6 +82,9 @@ class ConfigureActivity : EhActivity() {
                     composable(DOWNLOAD_SETTINGS_SCREEN) {
                         DownloadScreen()
                     }
+                    composable(AI_SETTINGS_SCREEN) {
+                        AiSettingsScreen()
+                    }
                     composable(EH_SETTINGS_SCREEN) {
                         EhScreen()
                     }
@@ -109,6 +113,7 @@ val LocalNavController = compositionLocalOf<NavController> { error("CompositionL
 const val BASE_SETTINGS_SCREEN = "Base"
 const val EH_SETTINGS_SCREEN = "Eh"
 const val DOWNLOAD_SETTINGS_SCREEN = "Download"
+const val AI_SETTINGS_SCREEN = "Ai"
 const val PRIVACY_SETTINGS_SCREEN = "Privacy"
 const val ADVANCED_SETTINGS_SCREEN = "Advanced"
 const val ABOUT_SETTINGS_SCREEN = "About"

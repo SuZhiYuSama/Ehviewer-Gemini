@@ -169,6 +169,10 @@
     <!-- Gallery detail -->
     <string name="error_cannot_find_gallery">Couldn\'t find the gallery</string>
     <string name="download">Download</string>
+    <string name="download_option_plain">仅下载</string>
+    <string name="download_option_ai_color">ai全彩</string>
+    <string name="download_option_ai_translate">ai汉化</string>
+    <string name="download_option_ai_full">ai全彩+ai汉化</string>
     <string name="read">Read</string>
     <plurals name="page_count">
         <item quantity="one">%d page</item>
@@ -409,6 +413,17 @@
     <string name="settings_download_clean_redundancy_summary">Remove gallery images which are not in download list but in download location</string>
     <string name="settings_download_clean_redundancy_no_redundancy">No redundancy</string>
     <string name="settings_download_clean_redundancy_done">Redundancy cleaning completed, clean-up %d items totally</string>
+    <string name="settings_ai">AI</string>
+    <string name="settings_ai_gemini_base_url">Gemini API base URL</string>
+    <string name="settings_ai_gemini_base_url_placeholder">https://generativelanguage.googleapis.com</string>
+    <string name="settings_ai_gemini_api_key">Gemini API key</string>
+    <string name="settings_ai_openai_base_url">OpenAI API base URL</string>
+    <string name="settings_ai_openai_base_url_placeholder">https://api.openai.com</string>
+    <string name="settings_ai_openai_api_key">OpenAI API key</string>
+    <string name="settings_ai_format">API format</string>
+    <string name="settings_ai_format_summary">Choose which provider format to use</string>
+    <string name="settings_ai_default_model">Default model name</string>
+    <string name="settings_ai_default_model_placeholder">e.g. gemini-1.5-flash</string>
     <string name="settings_advanced">Advanced</string>
     <string name="settings_advanced_save_parse_error_body">Save HTML content when parsing error</string>
     <string name="settings_advanced_save_parse_error_body_summary">Html content may be privacy-sensitive</string>
