@@ -25,6 +25,7 @@ import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.dao.DownloadLabel
 import com.hippo.ehviewer.image.Image
+import com.hippo.ehviewer.download.AiDownloadCoordinator
 import com.hippo.ehviewer.spider.SpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.OnSpiderListener
 import com.hippo.ehviewer.spider.putToDownloadDir
@@ -1036,6 +1037,7 @@ object DownloadManager : OnSpiderListener {
                             if (mDownloadListener != null) {
                                 mDownloadListener!!.onFinish(info)
                             }
+                            AiDownloadCoordinator.onDownloadFinished(appCtx, info)
                             val list: List<DownloadInfo>? = getInfoListForLabel(info.label)
                             if (list != null) {
                                 for (l in mDownloadInfoListeners) {

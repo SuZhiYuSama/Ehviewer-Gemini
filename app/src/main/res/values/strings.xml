@@ -169,6 +169,10 @@
     <!-- Gallery detail -->
     <string name="error_cannot_find_gallery">Couldn\'t find the gallery</string>
     <string name="download">Download</string>
+    <string name="download_option_plain">仅下载</string>
+    <string name="download_option_ai_color">ai全彩</string>
+    <string name="download_option_ai_translate">ai汉化</string>
+    <string name="download_option_ai_full">ai全彩+ai汉化</string>
     <string name="read">Read</string>
     <plurals name="page_count">
         <item quantity="one">%d page</item>
